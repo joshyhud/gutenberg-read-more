@@ -77,14 +77,7 @@ export default function Edit({ attributes, setAttributes }) {
 	};
 
 	const Pager = () => (
-		<div
-			style={{
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "space-between",
-				marginTop: 8,
-			}}
-		>
+		<div className="dmg-read-more-pager">
 			<div>
 				<Button
 					variant="secondary"
@@ -95,7 +88,7 @@ export default function Edit({ attributes, setAttributes }) {
 				</Button>
 			</div>
 			<div>
-				<span style={{ opacity: 0.8 }}>
+				<span>
 					Page {page} / {Math.max(1, totalPages)} ({totalItems} items)
 				</span>
 			</div>
@@ -115,9 +108,7 @@ export default function Edit({ attributes, setAttributes }) {
 		<>
 			<InspectorControls>
 				<PanelBody title="Browse Posts" initialOpen={true}>
-					<div
-						style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-					>
+					<div className="post-select-panel">
 						<TextControl
 							label="Search posts"
 							value={search}
@@ -135,26 +126,16 @@ export default function Edit({ attributes, setAttributes }) {
 							<Spinner />
 						) : (
 							<>
-								<div style={{ border: "1px solid #ddd", borderRadius: "4px" }}>
+								<div className="post-list">
 									{(posts || []).map((post, index) => (
-										<div
-											key={post.id}
-											style={{
-												padding: "12px",
-												borderBottom:
-													index < posts.length - 1 ? "1px solid #ddd" : "none",
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "space-between",
-											}}
-										>
+										<div className="post-item" key={post.id}>
 											<div>
 												<strong
 													dangerouslySetInnerHTML={{
 														__html: post.title?.rendered || "(no title)",
 													}}
 												/>
-												<div style={{ fontSize: 12, opacity: 0.7 }}>
+												<div className="post-subtext">
 													ID: {post.id} •{" "}
 													{new Date(post.date).toLocaleDateString()}
 												</div>
