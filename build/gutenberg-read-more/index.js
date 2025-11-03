@@ -31,8 +31,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _wordpress_core_data__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/core-data */ "@wordpress/core-data");
-/* harmony import */ var _wordpress_core_data__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_core_data__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./editor.scss */ "./src/gutenberg-read-more/editor.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
@@ -78,27 +78,70 @@ function Edit({
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps)({
     className: "dmg-read-more"
   });
+  const [posts, setPosts] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)([]);
+  const [isLoading, setIsLoading] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(false);
+  const [error, setError] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(null);
   const [page, setPage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(1);
   const [search, setSearch] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)("");
+  const [totalPages, setTotalPages] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(1);
+  const [totalItems, setTotalItems] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(0);
   const perPage = 10;
 
-  // Query posts with pagination + search
-  const {
-    records: posts = [],
-    isResolving,
-    hasResolved,
-    totalPages = 1,
-    totalItems = 0,
-    error
-  } = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_4__.useEntityRecords)("postType", "post", (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useMemo)(() => ({
-    per_page: perPage,
-    page,
-    search
-  }), [perPage, page, search]));
+  // Function to build API path with parameters
+  const buildApiPath = (currentPage = page, searchTerm = search) => {
+    let path = `/wp/v2/posts?per_page=${perPage}&page=${currentPage}&orderby=date&order=desc`;
 
-  // Reset to first page when search changes
+    // Handle search - if it's a number, search by ID, otherwise by title/content
+    if (searchTerm.trim()) {
+      if (!isNaN(searchTerm) && searchTerm.trim() !== "") {
+        // Search by specific ID
+        path += `&include=${parseInt(searchTerm)}`;
+      } else {
+        // Search by title/content
+        path += `&search=${encodeURIComponent(searchTerm)}`;
+      }
+    }
+    return path;
+  };
+
+  // Function to fetch posts
+  const fetchPosts = async (currentPage = page, searchTerm = search) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_4___default()({
+        path: buildApiPath(currentPage, searchTerm),
+        parse: false // This allows us to access headers
+      });
+      const postsData = await response.json();
+      const totalPosts = parseInt(response.headers.get("X-WP-Total") || "0");
+      const totalPagesCount = parseInt(response.headers.get("X-WP-TotalPages") || "1");
+      setPosts(postsData);
+      setTotalItems(totalPosts);
+      setTotalPages(totalPagesCount);
+    } catch (err) {
+      console.error("Error fetching posts:", err);
+      setError(err);
+      setPosts([]);
+      setTotalItems(0);
+      setTotalPages(1);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial load and when page changes
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
-    setPage(1);
+    fetchPosts();
+  }, [page]);
+
+  // When search changes, reset to page 1 and fetch
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
+    if (page === 1) {
+      fetchPosts(1, search);
+    } else {
+      setPage(1);
+    }
   }, [search]);
   const onSelectPost = post => {
     setAttributes({
@@ -113,7 +156,7 @@ function Edit({
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
         variant: "secondary",
         onClick: () => setPage(p => Math.max(1, p - 1)),
-        disabled: page <= 1 || isResolving,
+        disabled: page <= 1 || isLoading,
         children: "\u2039 Prev"
       })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
@@ -124,7 +167,7 @@ function Edit({
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
         variant: "secondary",
         onClick: () => setPage(p => Math.min(totalPages || 1, p + 1)),
-        disabled: page >= (totalPages || 1) || isResolving,
+        disabled: page >= (totalPages || 1) || isLoading,
         children: "Next \u203A"
       })
     })]
@@ -140,15 +183,16 @@ function Edit({
             label: "Search posts",
             value: search,
             onChange: setSearch,
-            placeholder: "Type to filter by title/content"
+            placeholder: "Search by title, content, or enter post ID",
+            help: "Enter text to search titles/content, or enter a number to find specific post ID"
           }), error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Notice, {
             status: "error",
             isDismissible: false,
             children: error.message || "Error loading posts."
-          }), isResolving && !hasResolved ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {}) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.Fragment, {
+          }), isLoading ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {}) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.Fragment, {
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
               className: "post-list",
-              children: (posts || []).map((post, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+              children: posts.length > 0 ? posts.map((post, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                 className: "post-item",
                 children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
                   children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("strong", {
@@ -164,8 +208,15 @@ function Edit({
                   onClick: () => onSelectPost(post),
                   children: attributes.selectedPostId === post.id ? "Selected" : "Select"
                 })]
-              }, post.id))
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(Pager, {})]
+              }, post.id)) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+                style: {
+                  padding: "20px",
+                  textAlign: "center",
+                  color: "#666"
+                },
+                children: search ? `No posts found matching "${search}"` : "No posts found"
+              })
+            }), posts.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(Pager, {})]
           })]
         })
       })
@@ -343,6 +394,17 @@ console.log("Hello World! (from create-block-gutenberg-read-more block)");
 
 /***/ }),
 
+/***/ "@wordpress/api-fetch":
+/*!**********************************!*\
+  !*** external ["wp","apiFetch"] ***!
+  \**********************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = window["wp"]["apiFetch"];
+
+/***/ }),
+
 /***/ "@wordpress/block-editor":
 /*!*************************************!*\
   !*** external ["wp","blockEditor"] ***!
@@ -373,17 +435,6 @@ module.exports = window["wp"]["blocks"];
 
 "use strict";
 module.exports = window["wp"]["components"];
-
-/***/ }),
-
-/***/ "@wordpress/core-data":
-/*!**********************************!*\
-  !*** external ["wp","coreData"] ***!
-  \**********************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = window["wp"]["coreData"];
 
 /***/ }),
 

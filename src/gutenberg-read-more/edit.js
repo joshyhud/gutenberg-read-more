@@ -20,8 +20,8 @@ import {
 	Spinner,
 	Notice,
 } from "@wordpress/components";
-import { useState, useMemo, useEffect } from "@wordpress/element";
-import { useEntityRecords } from "@wordpress/core-data";
+import { useState, useEffect } from "@wordpress/element";
+import apiFetch from "@wordpress/api-fetch";
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -42,30 +42,76 @@ import "./editor.scss";
 export default function Edit({ attributes, setAttributes }) {
 	const blockProps = useBlockProps({ className: "dmg-read-more" });
 
+	const [posts, setPosts] = useState([]);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState(null);
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
+	const [totalPages, setTotalPages] = useState(1);
+	const [totalItems, setTotalItems] = useState(0);
 	const perPage = 10;
 
-	// Query posts with pagination + search
-	const {
-		records: posts = [],
-		isResolving,
-		hasResolved,
-		totalPages = 1,
-		totalItems = 0,
-		error,
-	} = useEntityRecords(
-		"postType",
-		"post",
-		useMemo(
-			() => ({ per_page: perPage, page, search }),
-			[perPage, page, search],
-		),
-	);
+	// Function to build API path with parameters
+	const buildApiPath = (currentPage = page, searchTerm = search) => {
+		let path = `/wp/v2/posts?per_page=${perPage}&page=${currentPage}&orderby=date&order=desc`;
 
-	// Reset to first page when search changes
+		// Handle search - if it's a number, search by ID, otherwise by title/content
+		if (searchTerm.trim()) {
+			if (!isNaN(searchTerm) && searchTerm.trim() !== "") {
+				// Search by specific ID
+				path += `&include=${parseInt(searchTerm)}`;
+			} else {
+				// Search by title/content
+				path += `&search=${encodeURIComponent(searchTerm)}`;
+			}
+		}
+
+		return path;
+	};
+
+	// Function to fetch posts
+	const fetchPosts = async (currentPage = page, searchTerm = search) => {
+		setIsLoading(true);
+		setError(null);
+
+		try {
+			const response = await apiFetch({
+				path: buildApiPath(currentPage, searchTerm),
+				parse: false, // This allows us to access headers
+			});
+
+			const postsData = await response.json();
+			const totalPosts = parseInt(response.headers.get("X-WP-Total") || "0");
+			const totalPagesCount = parseInt(
+				response.headers.get("X-WP-TotalPages") || "1",
+			);
+
+			setPosts(postsData);
+			setTotalItems(totalPosts);
+			setTotalPages(totalPagesCount);
+		} catch (err) {
+			console.error("Error fetching posts:", err);
+			setError(err);
+			setPosts([]);
+			setTotalItems(0);
+			setTotalPages(1);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	// Initial load and when page changes
 	useEffect(() => {
-		setPage(1);
+		fetchPosts();
+	}, [page]);
+
+	// When search changes, reset to page 1 and fetch
+	useEffect(() => {
+		if (page === 1) {
+			fetchPosts(1, search);
+		} else {
+			setPage(1);
+		}
 	}, [search]);
 
 	const onSelectPost = (post) => {
@@ -82,7 +128,7 @@ export default function Edit({ attributes, setAttributes }) {
 				<Button
 					variant="secondary"
 					onClick={() => setPage((p) => Math.max(1, p - 1))}
-					disabled={page <= 1 || isResolving}
+					disabled={page <= 1 || isLoading}
 				>
 					‹ Prev
 				</Button>
@@ -96,7 +142,7 @@ export default function Edit({ attributes, setAttributes }) {
 				<Button
 					variant="secondary"
 					onClick={() => setPage((p) => Math.min(totalPages || 1, p + 1))}
-					disabled={page >= (totalPages || 1) || isResolving}
+					disabled={page >= (totalPages || 1) || isLoading}
 				>
 					Next ›
 				</Button>
@@ -113,7 +159,8 @@ export default function Edit({ attributes, setAttributes }) {
 							label="Search posts"
 							value={search}
 							onChange={setSearch}
-							placeholder="Type to filter by title/content"
+							placeholder="Search by title, content, or enter post ID"
+							help="Enter text to search titles/content, or enter a number to find specific post ID"
 						/>
 
 						{error && (
@@ -122,40 +169,54 @@ export default function Edit({ attributes, setAttributes }) {
 							</Notice>
 						)}
 
-						{isResolving && !hasResolved ? (
+						{isLoading ? (
 							<Spinner />
 						) : (
 							<>
 								<div className="post-list">
-									{(posts || []).map((post, index) => (
-										<div className="post-item" key={post.id}>
-											<div>
-												<strong
-													dangerouslySetInnerHTML={{
-														__html: post.title?.rendered || "(no title)",
-													}}
-												/>
-												<div className="post-subtext">
-													ID: {post.id} •{" "}
-													{new Date(post.date).toLocaleDateString()}
+									{posts.length > 0 ? (
+										posts.map((post, index) => (
+											<div className="post-item" key={post.id}>
+												<div>
+													<strong
+														dangerouslySetInnerHTML={{
+															__html: post.title?.rendered || "(no title)",
+														}}
+													/>
+													<div className="post-subtext">
+														ID: {post.id} •{" "}
+														{new Date(post.date).toLocaleDateString()}
+													</div>
 												</div>
+												<Button
+													variant={
+														attributes.selectedPostId === post.id
+															? "primary"
+															: "secondary"
+													}
+													onClick={() => onSelectPost(post)}
+												>
+													{attributes.selectedPostId === post.id
+														? "Selected"
+														: "Select"}
+												</Button>
 											</div>
-											<Button
-												variant={
-													attributes.selectedPostId === post.id
-														? "primary"
-														: "secondary"
-												}
-												onClick={() => onSelectPost(post)}
-											>
-												{attributes.selectedPostId === post.id
-													? "Selected"
-													: "Select"}
-											</Button>
+										))
+									) : (
+										<div
+											style={{
+												padding: "20px",
+												textAlign: "center",
+												color: "#666",
+											}}
+										>
+											{search
+												? `No posts found matching "${search}"`
+												: "No posts found"}
 										</div>
-									))}
+									)}
 								</div>
-								<Pager />
+								{posts.length > 0 && <Pager />}
 							</>
 						)}
 					</div>
