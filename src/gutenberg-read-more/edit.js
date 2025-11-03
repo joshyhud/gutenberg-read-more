@@ -49,7 +49,7 @@ export default function Edit({ attributes, setAttributes }) {
 	const [search, setSearch] = useState("");
 	const [totalPages, setTotalPages] = useState(1);
 	const [totalItems, setTotalItems] = useState(0);
-	const perPage = 10;
+	const perPage = 5;
 
 	// Function to build API path with parameters
 	const buildApiPath = (currentPage = page, searchTerm = search) => {

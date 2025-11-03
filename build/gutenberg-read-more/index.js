@@ -85,7 +85,7 @@ function Edit({
   const [search, setSearch] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)("");
   const [totalPages, setTotalPages] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(1);
   const [totalItems, setTotalItems] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(0);
-  const perPage = 10;
+  const perPage = 5;
 
   // Function to build API path with parameters
   const buildApiPath = (currentPage = page, searchTerm = search) => {
