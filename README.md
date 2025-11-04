@@ -116,7 +116,7 @@ wp dmg-read-more debug
 wp dmg-read-more debug --show-content
 ```
 
-## 🐳 DevKinsta Usage
+## DevKinsta Usage
 
 If you're using DevKinsta (Docker-based local development), run commands inside the container:
 
@@ -184,7 +184,7 @@ The block outputs with the class `dmg-read-more`, allowing for custom styling:
 
 The CLI commands are built using the WP-CLI framework and can be extended. See `includes/read-more-cli.php` for the implementation.
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Block Not Showing Posts
 
