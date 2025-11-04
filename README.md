@@ -19,11 +19,9 @@ The Gutenberg Read More plugin provides two main features:
 - **Performance Optimized**: Direct database queries for handling large datasets
 - **Flexible Filtering**: Customizable date ranges and result limits
 
-## Installation
+# Installation
 
-1. **Upload the Plugin**
-
-# Download and upload via WordPress Admin
+## Download and upload via WordPress Admin
 
 1. Download the plugin ZIP file
 2. Go to Plugins / Add New / Upload Plugin
