@@ -2,7 +2,7 @@
 
 A powerful WordPress Gutenberg block plugin that allows users to easily search for and create "Read More" links to other blog posts, complete with a WP-CLI command for post management.
 
-## 🎯 What This Plugin Does
+## What This Plugin Does
 
 The Gutenberg Read More plugin provides two main features:
 
@@ -21,7 +21,7 @@ The Gutenberg Read More plugin provides two main features:
 - **Performance Optimized**: Direct database queries for handling large datasets
 - **Flexible Filtering**: Customizable date ranges and result limits
 
-## 🚀 Installation
+## Installation
 
 1. **Upload the Plugin**
 
@@ -43,7 +43,7 @@ The Gutenberg Read More plugin provides two main features:
    wp plugin activate gutenberg-read-more
    ```
 
-## 📝 Using the Gutenberg Block
+## Using the Gutenberg Block
 
 ### Adding a Read More Block
 
@@ -80,7 +80,7 @@ The block renders as:
 </p>
 ```
 
-## 💻 WP-CLI Commands
+## WP-CLI Commands
 
 The plugin includes powerful WP-CLI commands for developers and site administrators.
 
@@ -151,7 +151,7 @@ docker exec -it devkinsta_fpm wp dmg-read-more search --date-after=2025-10-01 --
 docker exec -it devkinsta_fpm wp dmg-read-more search --format=json --allow-root > posts.json
 ```
 
-## 🛠️ Technical Details
+## Technical Details
 
 ### Block Information
 
@@ -178,7 +178,7 @@ docker exec -it devkinsta_fpm wp dmg-read-more search --format=json --allow-root
 - Date range filtering at database level
 - No unnecessary post meta or taxonomy queries
 
-## 🎨 Customization
+## Customization
 
 ### CSS Styling
 
@@ -224,17 +224,17 @@ The CLI commands are built using the WP-CLI framework and can be extended. See `
 2. **Date ranges**: Narrow date ranges for better performance
 3. **Export formats**: JSON/CSV formats are more efficient than table for large datasets
 
-## 📋 Requirements
+## Requirements
 
 - **WordPress**: 6.7 or higher
 - **PHP**: 7.4 or higher
 - **WP-CLI**: For command-line functionality (optional)
 
-## 🤝 Contributing
+## Contributing
 
 This plugin was developed by Josh Hudson Dev. For issues, feature requests, or contributions, please contact the development team.
 
-## 📄 License
+## License
 
 This plugin is licensed under GPL-2.0-or-later. See the LICENSE file for details.
 
