@@ -1,15 +1,14 @@
 # Gutenberg Read More Plugin
 
-A powerful WordPress Gutenberg block plugin that allows users to easily search for and create "Read More" links to other blog posts, complete with a WP-CLI command for post management.
+A WordPress Gutenberg block plugin that allows users to easily search for and create "Read More" links to other blog posts, complete with a WP-CLI command for post referencing.
 
-## What This Plugin Does
+## About this plugin
 
 The Gutenberg Read More plugin provides two main features:
 
 ### 1. **Gutenberg Block Editor Integration**
 
 - **Smart Post Search**: Search for posts by title, content, or specific post ID
-- **Date Range Filtering**: Find posts from specific time periods (defaults to last 30 days)
 - **Live Preview**: See post details (ID, title, publication date) before selecting
 - **Easy Link Creation**: Automatically generates "Read more" links with proper permalinks
 - **Pagination**: Browse through large numbers of posts with built-in pagination
@@ -17,7 +16,6 @@ The Gutenberg Read More plugin provides two main features:
 ### 2. **WP-CLI Command for Developers**
 
 - **Bulk Post Listing**: Get all posts within specified date ranges
-- **Multiple Export Formats**: Output as table, JSON, CSV, or YAML
 - **Performance Optimized**: Direct database queries for handling large datasets
 - **Flexible Filtering**: Customizable date ranges and result limits
 
@@ -25,23 +23,12 @@ The Gutenberg Read More plugin provides two main features:
 
 1. **Upload the Plugin**
 
-   ```bash
-   # Via WordPress Admin
-   Upload the plugin folder to /wp-content/plugins/gutenberg-read-more/
+# Download and upload via WordPress Admin
 
-   # Or via WP-CLI
-   wp plugin install /path/to/gutenberg-read-more.zip
-   ```
-
-2. **Activate the Plugin**
-
-   ```bash
-   # Via WordPress Admin
-   Go to Plugins → Activate "Gutenberg Read More"
-
-   # Or via WP-CLI
-   wp plugin activate gutenberg-read-more
-   ```
+1. Download the plugin ZIP file
+2. Go to Plugins / Add New / Upload Plugin
+3. Choose the gutenberg-read-more.zip file and click "Install Now"
+4. Then activate the plugin
 
 ## Using the Gutenberg Block
 
@@ -61,11 +48,6 @@ The Gutenberg Read More plugin provides two main features:
   - Enter a number to find a specific post by ID
   - Browse posts by date (most recent first)
 
-- **Date Range Filtering** (Optional):
-
-  - Toggle "Use custom date range" to specify exact dates
-  - Defaults to last 30 days if no custom range is set
-
 - **Real-time Search**: Results update as you type
 - **Pagination**: Navigate through multiple pages of results
 - **Post Information**: See post ID, title, and publication date
@@ -82,7 +64,7 @@ The block renders as:
 
 ## WP-CLI Commands
 
-The plugin includes powerful WP-CLI commands for developers and site administrators.
+The plugin includes powerful WP-CLI command for developers and site administrators.
 
 ### Basic Usage
 
