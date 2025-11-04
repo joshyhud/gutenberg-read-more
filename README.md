@@ -19,6 +19,12 @@ The Gutenberg Read More plugin provides two main features:
 - **Performance Optimized**: Direct database queries for handling large datasets
 - **Flexible Filtering**: Customizable date ranges and result limits
 
+# Requirements
+
+- **WordPress**: 6.7 or higher
+- **PHP**: 7.4 or higher
+- **WP-CLI**: For command-line functionality (optional)
+
 # Installation
 
 ## Download and upload via WordPress Admin
@@ -203,12 +209,6 @@ The CLI commands are built using the WP-CLI framework and can be extended. See `
 1. **Large datasets**: Use `--limit` parameter to restrict results
 2. **Date ranges**: Narrow date ranges for better performance
 3. **Export formats**: JSON/CSV formats are more efficient than table for large datasets
-
-## Requirements
-
-- **WordPress**: 6.7 or higher
-- **PHP**: 7.4 or higher
-- **WP-CLI**: For command-line functionality (optional)
 
 ## Contributing
 
