@@ -23,7 +23,7 @@ The Gutenberg Read More plugin provides two main features:
 
 - **WordPress**: 6.7 or higher
 - **PHP**: 7.4 or higher
-- **WP-CLI**: For command-line functionality (optional)
+- **WP-CLI**: For command-line functionality
 
 # Installation
 
